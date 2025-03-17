@@ -9,12 +9,12 @@ import Footer from "./footer";
 
 const LayoutContent = ({ children }: { children: React.ReactNode }) => {
   const { isLoggedIn } = useAuth();
-  const pathname = usePathname(); // ✅ Now works in a client component
+  const pathname = usePathname();
 
   return (
     <>
       <Header />
-      {/* ✅ Only show DashboardHeader when logged in & NOT on login page */}
+
       {isLoggedIn && pathname !== "/" && <DashboardHeader />}
       {children}
       <Footer />

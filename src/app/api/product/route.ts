@@ -14,7 +14,7 @@ interface Product {
   pdfs?: string[];
 }
 
-let products: Product[] = []; // Simulating a database
+let products: Product[] = [];
 
 export async function GET() {
   return NextResponse.json(products, { status: 200 });
@@ -34,7 +34,6 @@ export async function POST(req: Request) {
     let imagePath = "";
     let pdfPaths: string[] = [];
 
-    // **Handle Image Upload**
     const image = formData.get("image") as File;
     if (image) {
       const imageExt = image.name.split(".").pop();
@@ -47,7 +46,6 @@ export async function POST(req: Request) {
       imagePath = `/uploads/${imageName}`;
     }
 
-    // **Handle PDF Uploads**
     for (let i = 0; i < 5; i++) {
       const pdf = formData.get(`pdf_${i}`) as File;
       if (pdf) {
@@ -62,7 +60,6 @@ export async function POST(req: Request) {
       }
     }
 
-    // **Simulate Database Save**
     const newProduct: Product = {
       id: products.length ? Math.max(...products.map((p) => p.id)) + 1 : 1,
       productName,

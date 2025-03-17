@@ -14,7 +14,6 @@ export default function AddCategory() {
   const [name, setName] = useState("");
   const [active, setActive] = useState(false);
 
-  // ✅ Load from localStorage OR fetch from API
   useEffect(() => {
     const storedCategories = localStorage.getItem("categories");
     if (storedCategories) {
@@ -24,12 +23,11 @@ export default function AddCategory() {
         .then((res) => res.json())
         .then((data) => {
           setCategories(data);
-          localStorage.setItem("categories", JSON.stringify(data)); // ✅ Store in localStorage
+          localStorage.setItem("categories", JSON.stringify(data));
         });
     }
   }, []);
 
-  // ✅ Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -43,7 +41,7 @@ export default function AddCategory() {
       const newCategory = await res.json();
       setCategories((prev) => {
         const updatedCategories = [...prev, newCategory];
-        localStorage.setItem("categories", JSON.stringify(updatedCategories)); // ✅ Update localStorage
+        localStorage.setItem("categories", JSON.stringify(updatedCategories));
         return updatedCategories;
       });
       toast.success("Category Added Succesfully");

@@ -22,7 +22,6 @@ export default function AddSubCategory() {
   const [name, setName] = useState("");
   const [active, setActive] = useState(false);
 
-  // ✅ Load data from localStorage OR fetch from API
   useEffect(() => {
     const storedCategories = localStorage.getItem("categories");
     const storedSubcategories = localStorage.getItem("subcategories");
@@ -34,7 +33,7 @@ export default function AddSubCategory() {
         .then((res) => res.json())
         .then((data) => {
           setCategories(data);
-          localStorage.setItem("categories", JSON.stringify(data)); // ✅ Store in localStorage
+          localStorage.setItem("categories", JSON.stringify(data));
         });
     }
 
@@ -45,12 +44,12 @@ export default function AddSubCategory() {
         .then((res) => res.json())
         .then((data) => {
           setSubcategories(data);
-          localStorage.setItem("subcategories", JSON.stringify(data)); // ✅ Store in localStorage
+          localStorage.setItem("subcategories", JSON.stringify(data));
         });
     }
   }, []);
 
-  // ✅ Handle form submission
+  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!categoryId) return;
@@ -68,7 +67,7 @@ export default function AddSubCategory() {
         localStorage.setItem(
           "subcategories",
           JSON.stringify(updatedSubcategories)
-        ); // ✅ Update localStorage
+        );
         return updatedSubcategories;
       });
       toast.success("SubCategory Added Succesfully");
@@ -87,8 +86,8 @@ export default function AddSubCategory() {
           className={styles.select}
         >
           <option value="">Select Category</option>
-          {categories.map((cat) => (
-            <option key={cat.id} value={cat.id}>
+          {categories.map((cat, idx) => (
+            <option key={idx} value={cat.id}>
               {cat.name}
             </option>
           ))}
@@ -124,8 +123,8 @@ export default function AddSubCategory() {
           </tr>
         </thead>
         <tbody>
-          {subcategories.map((sub) => (
-            <tr key={sub.id}>
+          {subcategories.map((sub, idx) => (
+            <tr key={idx}>
               <td>{sub.id}</td>
               <td>
                 {categories.find((cat) => cat.id === sub.categoryId)?.name}

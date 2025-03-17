@@ -1,7 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
-import styles from "../../../styles/product.module.scss"; // Import SCSS styles
+import styles from "../../../styles/product.module.scss";
 import { toast, ToastContainer } from "react-toastify";
+import { log } from "console";
 
 interface SubCategory {
   id: number;
@@ -46,20 +47,17 @@ export default function AddProduct() {
   const [image, setImage] = useState<File | null>(null);
   const [pdfs, setPdfs] = useState<File[]>([]);
 
-  // **Fetch Data & LocalStorage Handling (Runs Only Once)**
   useEffect(() => {
     const storedCategories = localStorage.getItem("categories");
     const storedSubcategories = localStorage.getItem("subcategories");
     const storedProducts = localStorage.getItem("products");
 
     if (storedCategories && storedSubcategories && storedProducts) {
-      // Load from localStorage if available
       setCategories(JSON.parse(storedCategories));
       setSubCategories(JSON.parse(storedSubcategories));
       setProducts(JSON.parse(storedProducts));
       setLoading(false);
     } else {
-      // Fetch from API if not in localStorage
       const fetchCategories = async () => {
         try {
           const res = await fetch("/api/category");
@@ -89,8 +87,10 @@ export default function AddProduct() {
           const res = await fetch("/api/product");
           if (!res.ok) throw new Error("Failed to fetch products");
           const data = await res.json();
+          console.log(data, "dfassa");
+
           setProducts(Array.isArray(data) ? data : []);
-          localStorage.setItem("products", JSON.stringify(data));
+          // localStorage.setItem("products", JSON.stringify(data));
         } catch (error) {
           console.error("Error fetching products:", error);
         } finally {
@@ -167,7 +167,6 @@ export default function AddProduct() {
     }));
   };
 
-  // **Handle Form Submit**
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -181,6 +180,7 @@ export default function AddProduct() {
 
     if (image) formData.append("image", image);
     pdfs.forEach((pdf, index) => formData.append(`pdf_${index}`, pdf));
+    console.log(formData, "Form");
 
     const response = await fetch("/api/product", {
       method: "POST",
@@ -189,8 +189,10 @@ export default function AddProduct() {
 
     if (response.ok) {
       toast.success("Product added successfully!");
+      const product = await response.json();
 
-      // ✅ Reset all fields after successful submission
+      console.log(product.d, "response");
+
       setProduct({
         id: 0,
         productName: "",
@@ -202,164 +204,256 @@ export default function AddProduct() {
       });
       setImage(null);
       setPdfs([]);
+      setProducts((prev) => {
+        const updatedproducts = [...prev, product.data];
+        localStorage.setItem("products", JSON.stringify(updatedproducts)); // ✅ Update localStorage
+        return updatedproducts;
+      });
+      localStorage.setItem("products", JSON.stringify(product.data));
     } else {
       toast.error("Failed to add product.");
     }
+    console.log(products, "product");
   };
 
   return (
-    <div className={styles.addProduct}>
-      <h2 className={styles.heading}>Add Product</h2>
-      <form className={styles.form} onSubmit={handleSubmit}>
-        <label className={styles.label}>Product Name</label>
-        <input
-          className={styles.input}
-          type="text"
-          name="productName"
-          onChange={handleChange}
-          required
-        />
-
-        <label className={styles.label}>Category</label>
-        <select
-          className={styles.select}
-          name="category"
-          onChange={handleChange}
-          required
-        >
-          <option value="">Select a category</option>
-          {categories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.name}
-            </option>
-          ))}
-        </select>
-
-        <label className={styles.label}>Sub Category</label>
-        <select
-          className={styles.select}
-          name="subCategory"
-          onChange={handleChange}
-          required
-          disabled={!product.category}
-        >
-          <option value="">Select a Subcategory</option>
-          {subCategories
-            .filter((sub) => sub.categoryId === Number(product.category))
-            .map((sub) => (
-              <option key={sub.id} value={sub.id}>
-                {sub.name}
+    <div className={styles.mainContainer}>
+      <div className={styles.addProduct}>
+        <h2 className={styles.heading}>Add Product</h2>
+        <form className={styles.form} onSubmit={handleSubmit}>
+          <label className={styles.label}>Category</label>
+          <select
+            className={styles.select}
+            name="category"
+            onChange={handleChange}
+            value={product.category}
+            required
+          >
+            <option value="">Select a category</option>
+            {categories.map((category, idx) => (
+              <option key={idx} value={category.id}>
+                {category.name}
               </option>
             ))}
-        </select>
-        <label className={styles.label}>Upload Product Image</label>
-        <input
-          className={styles.fileInput}
-          type="file"
-          accept="image/*"
-          onChange={handleFileChange}
-        />
-        {image && (
-          <button className={styles.removeBtn} onClick={handleRemoveImage}>
-            Remove Image
+          </select>
+
+          <label className={styles.label}>Sub Category</label>
+          <select
+            className={styles.select}
+            name="subCategory"
+            onChange={handleChange}
+            value={product.subCategory}
+            required
+            disabled={!product.category}
+          >
+            <option value="">Select a Subcategory</option>
+            {subCategories
+              .filter((sub) => sub.categoryId === Number(product.category))
+              .map((sub) => (
+                <option key={sub.id} value={sub.id}>
+                  {sub.name}
+                </option>
+              ))}
+          </select>
+          <label className={styles.label}>Product Name</label>
+          <input
+            className={styles.input}
+            type="text"
+            value={product.productName}
+            name="productName"
+            onChange={handleChange}
+            required
+          />
+          <label className={styles.label}>Upload Product Image</label>
+          <input
+            className={styles.fileInput}
+            type="file"
+            value={product.image}
+            accept="image/*"
+            onChange={handleFileChange}
+          />
+          {image && (
+            <button className={styles.removeBtn} onClick={handleRemoveImage}>
+              Remove Image
+            </button>
+          )}
+          <label className={styles.label}>Short Description</label>
+          <textarea
+            className={styles.input}
+            placeholder="Short Description"
+            value={product.shortDescription}
+            onChange={(e) => {
+              setProduct({ ...product, shortDescription: e.target.value });
+            }}
+          />
+          <h3 className={styles.subHeading}>Descriptions</h3>
+          {product.descriptions.map((desc, index) => (
+            <div key={index} className={styles.dynamicField}>
+              <input
+                className={styles.input}
+                type="text"
+                placeholder="Title"
+                value={desc.title}
+                onChange={(e) => {
+                  const updated = [...product.descriptions];
+                  updated[index].title = e.target.value;
+                  setProduct({ ...product, descriptions: updated });
+                }}
+              />
+              <textarea
+                className={styles.input}
+                placeholder="Description"
+                value={desc.text}
+                onChange={(e) => {
+                  const updated = [...product.descriptions];
+                  updated[index].text = e.target.value;
+                  setProduct({ ...product, descriptions: updated });
+                }}
+              />
+              <button
+                className={styles.removeBtn}
+                type="button"
+                onClick={() => handleRemoveDescription(index)}
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+          <button
+            className={styles.addBtn}
+            type="button"
+            onClick={handleAddDescription}
+          >
+            Add More
           </button>
-        )}
 
-        <h3 className={styles.subHeading}>Descriptions</h3>
-        {product.descriptions.map((desc, index) => (
-          <div key={index} className={styles.dynamicField}>
-            <input
-              className={styles.input}
-              type="text"
-              placeholder="Title"
-              value={desc.title}
-              onChange={(e) => {
-                const updated = [...product.descriptions];
-                updated[index].title = e.target.value;
-                setProduct({ ...product, descriptions: updated });
-              }}
-            />
-            <textarea
-              className={styles.input}
-              placeholder="Description"
-              value={desc.text}
-              onChange={(e) => {
-                const updated = [...product.descriptions];
-                updated[index].text = e.target.value;
-                setProduct({ ...product, descriptions: updated });
-              }}
-            />
-            <button
-              className={styles.removeBtn}
-              type="button"
-              onClick={() => handleRemoveDescription(index)}
-            >
-              Remove
-            </button>
-          </div>
-        ))}
-        <button
-          className={styles.addBtn}
-          type="button"
-          onClick={handleAddDescription}
-        >
-          Add More
-        </button>
+          <h3 className={styles.subHeading}>Features</h3>
+          {product.features.map((feature, index) => (
+            <div key={index} className={styles.dynamicField}>
+              <input
+                className={styles.input}
+                type="text"
+                placeholder="Feature"
+                value={feature}
+                onChange={(e) => {
+                  const updated = [...product.features];
+                  updated[index] = e.target.value;
+                  setProduct({ ...product, features: updated });
+                }}
+              />
+              <button
+                className={styles.removeBtn}
+                type="button"
+                onClick={() => handleRemoveFeature(index)}
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+          <button
+            className={styles.addBtn}
+            type="button"
+            onClick={handleAddFeature}
+          >
+            Add More
+          </button>
+          <label className={styles.label}>Upload PDFs</label>
+          <input
+            className={styles.fileInput}
+            type="file"
+            value={product.pdfs}
+            accept="application/pdf"
+            onChange={handlePdfChange}
+            multiple
+          />
+          {pdfs.map((pdf, index) => (
+            <div key={index} className={styles.pdfItem}>
+              <span>{pdf.name}</span>
+              <button
+                className={styles.removeBtn}
+                onClick={() => handleRemovePdf(index)}
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+          <button className={styles.submitBtn} type="submit">
+            Submit
+          </button>
+        </form>
 
-        <h3 className={styles.subHeading}>Features</h3>
-        {product.features.map((feature, index) => (
-          <div key={index} className={styles.dynamicField}>
-            <input
-              className={styles.input}
-              type="text"
-              placeholder="Feature"
-              value={feature}
-              onChange={(e) => {
-                const updated = [...product.features];
-                updated[index] = e.target.value;
-                setProduct({ ...product, features: updated });
-              }}
-            />
-            <button
-              className={styles.removeBtn}
-              type="button"
-              onClick={() => handleRemoveFeature(index)}
-            >
-              Remove
-            </button>
-          </div>
-        ))}
-        <button
-          className={styles.addBtn}
-          type="button"
-          onClick={handleAddFeature}
-        >
-          Add More
-        </button>
-        <label className={styles.label}>Upload PDFs</label>
-        <input
-          className={styles.fileInput}
-          type="file"
-          accept="application/pdf"
-          onChange={handlePdfChange}
-          multiple
-        />
-        {pdfs.map((pdf, index) => (
-          <div key={index} className={styles.pdfItem}>
-            <span>{pdf.name}</span>
-            <button
-              className={styles.removeBtn}
-              onClick={() => handleRemovePdf(index)}
-            >
-              Remove
-            </button>
-          </div>
-        ))}
-        <button className={styles.submitBtn} type="submit">
-          Submit
-        </button>
-      </form>
-      <ToastContainer position="top-right" autoClose={3000} />
+        <ToastContainer position="top-right" autoClose={3000} />
+      </div>
+      <h3 className={styles.subHeading}>All Products</h3>
+      <table className={styles.table}>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Product Name</th>
+            <th>Category</th>
+            <th>Subcategory</th>
+            <th>Short Description</th>
+            <th>Descriptions</th>
+            <th>Features</th>
+            <th>Image</th>
+            <th>PDFs</th>
+          </tr>
+        </thead>
+        <tbody>
+          {products.map((prod, idx) => (
+            <tr key={idx}>
+              <td>{idx + 1}</td>
+              <td>{prod.productName}</td>
+              <td>
+                {categories.find((cat) => cat.id === prod.category)?.name ||
+                  "N/A"}
+              </td>
+              <td>
+                {subCategories.find((sub) => sub.id === prod.subCategory)
+                  ?.name || "N/A"}
+              </td>
+              <td>{prod.shortDescription}</td>
+              <td>
+                {prod.descriptions.map((desc, index) => (
+                  <div key={index}>
+                    <strong>{desc.title}:</strong> {desc.text}
+                  </div>
+                ))}
+              </td>
+              <td>
+                {prod.features.map((feature, index) => (
+                  <div key={index}>{feature}</div>
+                ))}
+              </td>
+              <td>
+                {prod.image ? (
+                  <img
+                    src={prod.image}
+                    alt={prod.productName}
+                    className={styles.productImage}
+                  />
+                ) : (
+                  "No Image"
+                )}
+              </td>
+              <td>
+                {prod.pdfs && prod.pdfs.length > 0
+                  ? prod.pdfs.map((pdf, index) => (
+                      <a
+                        key={index}
+                        href={pdf}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        PDF {index + 1}
+                      </a>
+                    ))
+                  : "No PDFs"}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

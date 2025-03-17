@@ -65,7 +65,7 @@
   }
 }
 
-.topMeuContainer {
+.topMenuContainer {
   display: block;
   margin-top: 20px;
   .changePassword {
@@ -84,7 +84,7 @@
   background: none;
   border: none;
   font-size: 16px;
-  color: black; // Tailwind's text-red-500 equivalent
+  color: black;
   cursor: pointer;
   &:hover {
     color: #ef4444;

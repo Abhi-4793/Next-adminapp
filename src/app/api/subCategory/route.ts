@@ -7,7 +7,6 @@ interface SubCategory {
   active: boolean;
 }
 
-// In-memory array to store subcategories (Replace with database in production)
 let subcategories: SubCategory[] = [];
 
 export async function GET() {
@@ -19,7 +18,6 @@ export async function POST(req: Request) {
     const { categoryId, name, active }: Omit<SubCategory, "id"> =
       await req.json();
 
-    // Ensure a unique ID (increment based on existing entries)
     const newId = subcategories.length
       ? Math.max(...subcategories.map((sub) => sub.id)) + 1
       : 1;

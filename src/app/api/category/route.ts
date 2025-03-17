@@ -6,7 +6,7 @@ interface Category {
   active: boolean;
 }
 
-let categories: Category[] = []; // Store categories in-memory
+let categories: Category[] = [];
 
 export async function GET() {
   return NextResponse.json(categories, { status: 200 });
@@ -16,7 +16,6 @@ export async function POST(req: Request) {
   try {
     const { name, active }: Omit<Category, "id"> = await req.json();
 
-    // Ensure unique ID (increment based on max existing ID)
     const newId = categories.length
       ? Math.max(...categories.map((cat) => cat.id)) + 1
       : 1;

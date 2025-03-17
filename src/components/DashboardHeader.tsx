@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import styles from "@styles/dashboardHeader.module.scss";
 import { usePathname } from "next/navigation";
-import { useAuth } from "src/Auth/AuthContext"; // ✅ Import Auth Context
+import { useAuth } from "src/Auth/AuthContext";
 
 export const DashboardHeader = () => {
   const { isLoggedIn } = useAuth();

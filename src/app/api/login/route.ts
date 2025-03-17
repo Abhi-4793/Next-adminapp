@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 
-const SECRET_KEY = "orchidBudsSchool"; // ⚠️ Change this! Store securely in .env file
+const SECRET_KEY = "orchidBudsSchool";
 
 export async function POST(req: Request) {
   try {
@@ -14,11 +14,10 @@ export async function POST(req: Request) {
       );
     }
 
-    // ✅ Generate JWT Token
     const token = jwt.sign(
       { email, name: "Admin User", isAuthenticated: true },
       SECRET_KEY,
-      { expiresIn: "1h" } // Token expires in 1 hour
+      { expiresIn: "1h" }
     );
 
     return NextResponse.json({

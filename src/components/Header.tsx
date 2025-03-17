@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import styles from "../../src/styles/Header.module.scss";
+import styles from "../styles/Header.module.scss";
 import Image from "next/image";
 import Link from "next/link";
 import { LogOutIcon } from "lucide-react";
@@ -31,7 +31,7 @@ export default function Header() {
 
       {isLoggedIn && (
         <div className={styles.topMenuContainer}>
-          <Link href="/change-password" className={styles.changePassword}>
+          <Link href="/changePassword" className={styles.changePassword}>
             Change Password
           </Link>
           <span>|</span>
