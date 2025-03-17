@@ -1,0 +1,92 @@
+.Header {
+  display: flex;
+  justify-content: space-around;
+  margin: auto;
+  size: 20px;
+  padding: 4px 200px;
+  .logo {
+    height: 100%;
+    width: 340px;
+    object-fit: cover;
+  }
+  .admin_panel {
+    color: rgb(74, 74, 167);
+  }
+}
+
+.dashboard {
+  margin-left: 16px;
+  text-decoration: none;
+  color: white;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdownButton {
+  margin-left: 16px;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.dropdownMenu {
+  position: absolute;
+  display: none;
+  background-color: white;
+  color: black;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  min-width: 160px;
+}
+
+.dropdown:hover .dropdownMenu {
+  display: block;
+}
+
+.dropdownItem {
+  display: block;
+  padding: 8px 16px;
+  text-decoration: none;
+  color: black;
+
+  &:hover {
+    background-color: #f3f4f6;
+  }
+}
+
+.topMeuContainer {
+  display: block;
+  margin-top: 20px;
+  .changePassword {
+    margin-right: 16px;
+    text-decoration: none;
+    color: black;
+
+    &:hover {
+      text-decoration: underline;
+      color: #ef4444;
+    }
+  }
+}
+.logoutButton {
+  padding-top: 4px;
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: black; // Tailwind's text-red-500 equivalent
+  cursor: pointer;
+  &:hover {
+    color: #ef4444;
+  }
+}

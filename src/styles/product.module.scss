@@ -1,0 +1,98 @@
+.addProduct {
+  max-width: 600px;
+  margin: auto;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.heading {
+  text-align: center;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.subHeading {
+  color: #555;
+  margin-top: 20px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.input,
+.textarea,
+.fileInput {
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+}
+.pdfItem {
+  display: flex;
+  flex-direction: column;
+  column-gap: 5px;
+  // gap: 10px;
+}
+.textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.fileInput {
+  border: none;
+}
+
+.dynamicField {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.addBtn,
+.removeBtn,
+.submitBtn {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.addBtn {
+  background: #007bff;
+  color: white;
+}
+
+.removeBtn {
+  margin-left: 5px;
+  background: #dc3545;
+  color: white;
+}
+
+.submitBtn {
+  background: #28a745;
+  color: white;
+  margin-top: 10px;
+}
+
+.addBtn:hover {
+  background: #0056b3;
+}
+
+.removeBtn:hover {
+  background: #c82333;
+}
+
+.submitBtn:hover {
+  background: #218838;
+}
