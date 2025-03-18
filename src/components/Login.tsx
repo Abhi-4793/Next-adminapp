@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import styles from "@styles/login.module.scss";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { log } from "console";
+// import { log } from "console";
 import { useAuth } from "src/Auth/AuthContext";
 import { toast, ToastContainer } from "react-toastify";
 
@@ -28,7 +28,7 @@ const Login = () => {
       if (!res.ok) throw new Error("Login failed");
 
       const data = await res.json();
-      login(data.token); // ✅ Store token globally
+      login(data.token);
       router.push("/dashboard");
       toast.success("Login Succesfully");
     } catch (err) {

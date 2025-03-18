@@ -27,6 +27,7 @@ interface Product {
   features: string[];
   image?: string;
   pdfs?: string[];
+  status: boolean;
 }
 
 export default function AddProduct() {
@@ -36,17 +37,21 @@ export default function AddProduct() {
     category: 0,
     subCategory: 0,
     shortDescription: "",
-    descriptions: [],
-    features: [],
+    descriptions: [{ title: "", text: "" }],
+    features: [""],
+    status: false,
   });
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [active, setActive] = useState(false);
+
   const [categories, setCategories] = useState<Category[]>([]);
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   const [image, setImage] = useState<File | null>(null);
   const [pdfs, setPdfs] = useState<File[]>([]);
-
+  const [editMode, setEditMode] = useState<boolean>(false);
+  const [editProductId, setEditProductId] = useState<number | null>(null);
   useEffect(() => {
     const storedCategories = localStorage.getItem("categories");
     const storedSubcategories = localStorage.getItem("subcategories");
@@ -177,22 +182,51 @@ export default function AddProduct() {
     formData.append("shortDescription", product.shortDescription);
     formData.append("descriptions", JSON.stringify(product.descriptions));
     formData.append("features", JSON.stringify(product.features));
+    formData.append("status", JSON.stringify(product.status));
 
     if (image) formData.append("image", image);
     pdfs.forEach((pdf, index) => formData.append(`pdf_${index}`, pdf));
+
     console.log(formData, "Form");
 
-    const response = await fetch("/api/product", {
-      method: "POST",
-      body: formData,
-    });
+    let response;
+    if (editMode && editProductId !== null) {
+      // Edit product API call
+      response = await fetch(`/api/product/${editProductId}`, {
+        method: "PUT",
+        body: formData,
+      });
+    } else {
+      // Add new product API call
+      response = await fetch("/api/product", {
+        method: "POST",
+        body: formData,
+      });
+    }
 
     if (response.ok) {
-      toast.success("Product added successfully!");
-      const product = await response.json();
+      const productData = await response.json();
+      toast.success(
+        editMode
+          ? "Product updated successfully!"
+          : "Product added successfully!"
+      );
 
-      console.log(product.d, "response");
+      setProducts((prev) => {
+        let updatedProducts;
+        if (editMode && editProductId !== null) {
+          updatedProducts = prev.map((p) =>
+            p.id === editProductId ? productData.data : p
+          );
+        } else {
+          updatedProducts = [...prev, productData.data];
+        }
 
+        localStorage.setItem("products", JSON.stringify(updatedProducts));
+        return updatedProducts;
+      });
+
+      // Reset form
       setProduct({
         id: 0,
         productName: "",
@@ -201,25 +235,39 @@ export default function AddProduct() {
         shortDescription: "",
         descriptions: [],
         features: [],
+        status: false,
       });
       setImage(null);
       setPdfs([]);
-      setProducts((prev) => {
-        const updatedproducts = [...prev, product.data];
-        localStorage.setItem("products", JSON.stringify(updatedproducts)); // ✅ Update localStorage
-        return updatedproducts;
-      });
-      localStorage.setItem("products", JSON.stringify(product.data));
+      setEditMode(false);
+      setEditProductId(null);
     } else {
-      toast.error("Failed to add product.");
+      toast.error("Failed to submit product.");
     }
-    console.log(products, "product");
+
+    console.log(products, "Updated Products");
+  };
+
+  const handleEdit = (id: number) => {
+    const productToEdit = products.find((p) => p.id === id);
+    if (productToEdit) {
+      setProduct(productToEdit);
+      setEditMode(true);
+      setEditProductId(id);
+    }
+  };
+
+  const handleDelete = (id: number) => {
+    const updatedProducts = products.filter((p) => p.id !== id);
+    setProducts(updatedProducts);
+    localStorage.setItem("products", JSON.stringify(updatedProducts));
+    toast.error("Product deleted.");
   };
 
   return (
     <div className={styles.mainContainer}>
+      <h2 className={styles.heading}>Add Product</h2>
       <div className={styles.addProduct}>
-        <h2 className={styles.heading}>Add Product</h2>
         <form className={styles.form} onSubmit={handleSubmit}>
           <label className={styles.label}>Category</label>
           <select
@@ -259,7 +307,7 @@ export default function AddProduct() {
           <input
             className={styles.input}
             type="text"
-            value={product.productName}
+            value={product.productName || ""}
             name="productName"
             onChange={handleChange}
             required
@@ -268,7 +316,6 @@ export default function AddProduct() {
           <input
             className={styles.fileInput}
             type="file"
-            value={product.image}
             accept="image/*"
             onChange={handleFileChange}
           />
@@ -361,7 +408,7 @@ export default function AddProduct() {
           <input
             className={styles.fileInput}
             type="file"
-            value={product.pdfs}
+            // value={product.pdfs || ""}
             accept="application/pdf"
             onChange={handlePdfChange}
             multiple
@@ -377,6 +424,16 @@ export default function AddProduct() {
               </button>
             </div>
           ))}
+          <div className={styles.checkboxContainer}>
+            <input
+              type="checkbox"
+              checked={product.status}
+              onChange={(e) =>
+                setProduct((prev) => ({ ...prev, status: e.target.checked }))
+              }
+            />
+            <label>Active</label>
+          </div>
           <button className={styles.submitBtn} type="submit">
             Submit
           </button>
@@ -397,6 +454,9 @@ export default function AddProduct() {
             <th>Features</th>
             <th>Image</th>
             <th>PDFs</th>
+            <th>Status</th>
+            <th>Edit</th>
+            <th>Delete</th>
           </tr>
         </thead>
         <tbody>
@@ -449,6 +509,23 @@ export default function AddProduct() {
                       </a>
                     ))
                   : "No PDFs"}
+              </td>
+              <td>{prod.status ? "Active" : "InActive"}</td>
+              <td>
+                <button
+                  className={styles.editBtn}
+                  onClick={() => handleEdit(prod.id)}
+                >
+                  Edit
+                </button>
+              </td>
+              <td>
+                <button
+                  className={styles.deleteBtn}
+                  onClick={() => handleDelete(prod.id)}
+                >
+                  Delete
+                </button>
               </td>
             </tr>
           ))}

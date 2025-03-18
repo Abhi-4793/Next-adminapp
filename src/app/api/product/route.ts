@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { writeFile } from "fs/promises";
 import path from "path";
 
+import { products, setProducts } from "../../../../src/data/products";
+
 interface Product {
   id: number;
   productName: string;
@@ -12,9 +14,8 @@ interface Product {
   features: string[];
   image?: string;
   pdfs?: string[];
+  status: boolean;
 }
-
-let products: Product[] = [];
 
 export async function GET() {
   return NextResponse.json(products, { status: 200 });
@@ -30,10 +31,14 @@ export async function POST(req: Request) {
     const shortDescription = formData.get("shortDescription") as string;
     const descriptions = JSON.parse(formData.get("descriptions") as string);
     const features = JSON.parse(formData.get("features") as string);
+    const status = formData.has("status")
+      ? JSON.parse(formData.get("status") as string)
+      : false;
 
     let imagePath = "";
     let pdfPaths: string[] = [];
 
+    // Handle image upload
     const image = formData.get("image") as File;
     if (image) {
       const imageExt = image.name.split(".").pop();
@@ -46,6 +51,7 @@ export async function POST(req: Request) {
       imagePath = `/uploads/${imageName}`;
     }
 
+    // Handle PDF uploads
     for (let i = 0; i < 5; i++) {
       const pdf = formData.get(`pdf_${i}`) as File;
       if (pdf) {
@@ -70,9 +76,12 @@ export async function POST(req: Request) {
       features,
       image: imagePath,
       pdfs: pdfPaths,
+      status,
     };
 
-    products.push(newProduct);
+    const updatedProducts = [...products, newProduct];
+    setProducts(updatedProducts);
+
     return NextResponse.json(
       { success: true, data: newProduct },
       { status: 201 }
